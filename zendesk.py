@@ -3,7 +3,6 @@ import requests
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
-print(os.getenv('API_KEY'))
 def main():
     print("Welcome to the ticket viewer!")
     while(True):
