@@ -21,9 +21,9 @@ def main():
                         ListAll()
                     elif option == "2":
                         number = totTickets()
-                        id = input("    Please enter a number between 0 and " + str(number) + ": ")
-                        while int(id) < 0 or int(id) > number:
-                            id = input("    Please enter a number between 0 and " + str(number) + ": ")
+                        id = input("    Please enter a number between 1 and " + str(number) + ": ")
+                        while int(id) <= 0 or int(id) > number:
+                            id = input("    Please enter a number between 1 and " + str(number) + ": ")
                         ListSpecific(id)
                     else: 
                         print("     Please enter a valid option")
