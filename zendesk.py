@@ -4,7 +4,6 @@ from dotenv import load_dotenv, find_dotenv
 
 # This allows us to to find the environment variables for the API Get requests 
 load_dotenv(find_dotenv())
-
 # This is the main function where all of the user interface occurs
 # It will continously run until the user quits  
 def main():
@@ -40,6 +39,7 @@ def ListAll():
     password= os.getenv('PASS')
     user = os.getenv('USER_N')
     domainName = os.getenv('DOMAIN_NAME')
+
     try:
         response = requests.get('https://'+ domainName + '.zendesk.com/api/v2/tickets.json?page[size]=25', auth =(user,password))
     except requests.HTTPError as exception:
@@ -47,6 +47,7 @@ def ListAll():
     print(response.json())
     
     ParseAllJson(response.json())
+
     print('\n')
     option = 'a'
     while True:
@@ -57,6 +58,8 @@ def ListAll():
         hasMore = temp['meta']['has_more']
         checkPrev = temp['tickets'][0]['id']
         prev = temp['links']['prev']
+        
+        # This ensures that we give the correct prompt for the user based off of current index
         if hasMore:
             next = temp['links']['next']
             if checkPrev == 1:
@@ -65,6 +68,9 @@ def ListAll():
                 option = input("    Enter 'n' for next page and 'p for previous page and 'q' to quit: ")
         else: 
             option = input("    Enter 'p for previous page and 'q' to quit: ")
+
+        # This block makes sure that if there is a next page then it can be selected otherwise you can't go
+        # to next page
         if option == 'n':
             if next == None:
                 option = input("    Enter 'p' for previous page and 'q' to quit: ")
@@ -74,6 +80,8 @@ def ListAll():
             except requests.HTTPError as exception:
                 print(exception)
             ParseAllJson(response.json())
+
+        # This block makes sure that if there is a previous page it can be selected otherwise it can't be selected
         if option == 'p':
             if checkPrev == 1:
                 option = input("    Enter 'n' for next page and 'q' to quit: ")
@@ -101,7 +109,7 @@ def ListSpecific(id):
     user = os.getenv('USER_NAME')
     domainName = os.getenv('DOMAIN_NAME')
     try:
-        req = 'https://' + domainName + '.zendesk.com/api/v2/tickets/' + id + '.json'
+        req = 'https://' + domainName + '.zendesk.com/api/v2/tickets/' + str(id) + '.json'
         response = requests.get(req, auth=(user, api))
     except requests.HTTPError as exception:
         print(exception)
@@ -130,7 +138,6 @@ def totTickets():
     count = Json['count']
 
     return count['value']
-
 
 if __name__ == "__main__":
     main()
