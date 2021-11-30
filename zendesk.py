@@ -18,7 +18,7 @@ def main():
                     print("    Press 1 to view all tickets")
                     print("    Press 2 to select a specific ticket")
                     option = input("    Press 'q' to go back to home screen: ")
-                
+                    
                     if option == "q":
                         break
                     elif option == "1": 
@@ -34,16 +34,58 @@ def main():
 
 # This is the API request that will get all of the tickets and send them to a helper function to parse
 # the data to output it 
+# This function also includes the logic to make sure that only a maximum of 25 items are displayed and you
+# can move back and forth between pages
 def ListAll(): 
-    api = os.getenv('API_KEY')
-    user = os.getenv('USER_NAME')
+    password= os.getenv('PASS')
+    user = os.getenv('USER_N')
     domainName = os.getenv('DOMAIN_NAME')
-    try: 
-        response = requests.get('https://'+ domainName + '.zendesk.com/api/v2/tickets.json', auth=(user, api))
-        response.raise_for_status()
+    try:
+        response = requests.get('https://'+ domainName + '.zendesk.com/api/v2/tickets.json?page[size]=25', auth =(user,password))
     except requests.HTTPError as exception:
         print(exception)
+    print(response.json())
+    
     ParseAllJson(response.json())
+    print('\n')
+    option = 'a'
+    while True:
+        print('\n')
+        if option == 'q':
+            break
+        temp = response.json()
+        hasMore = temp['meta']['has_more']
+        checkPrev = temp['tickets'][0]['id']
+        prev = temp['links']['prev']
+        if hasMore:
+            next = temp['links']['next']
+            if checkPrev == 1:
+                option = input("    Enter 'n' for next page and 'q' to quit: ")
+            else:
+                option = input("    Enter 'n' for next page and 'p for previous page and 'q' to quit: ")
+        else: 
+            option = input("    Enter 'p for previous page and 'q' to quit: ")
+        if option == 'n':
+            if next == None:
+                option = input("    Enter 'p' for previous page and 'q' to quit: ")
+                continue
+            try:
+                response = requests.get(next, auth =(user,password))
+            except requests.HTTPError as exception:
+                print(exception)
+            ParseAllJson(response.json())
+        if option == 'p':
+            if checkPrev == 1:
+                option = input("    Enter 'n' for next page and 'q' to quit: ")
+                continue
+            try:
+                response = requests.get(prev, auth =(user,password))
+            except requests.HTTPError as exception:
+                print(exception)
+            ParseAllJson(response.json())
+
+        
+
 
 # This function parses the JSON response body from the get all tickets and outputs the information to screen
 def ParseAllJson(content):
